@@ -7,3 +7,4 @@ activity_version = 18
 show_launcher = yes
 license = GPLv3+
 mime_types = application/x-stopwatch-activity;
+summary = An easy way to settle the debate of who is faster! This activity allows you to measure theamount of time something takes.
