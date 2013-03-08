@@ -52,7 +52,7 @@ class WatchModel():
         self._history = dobject.AddOnlySortedSet(handler, translator=self._trans)
         self._history_lock = threading.RLock()
 
-        self._view_listener = None  #This must be done before _update_state
+        self._view_listener = None  # This must be done before _update_state
         
         handler2 = handler.copy("basestate")
         
@@ -60,7 +60,7 @@ class WatchModel():
                      float("-inf"), self._trans, dobject.float_translator)
         
         self._state = ()
-        self._update_state() #sets the state to the base_state
+        self._update_state() # sets the state to the base_state
     
         self._base_state.register_listener(self._basestate_cb)
         self._history.register_listener(self._history_cb)
@@ -94,8 +94,9 @@ class WatchModel():
             self._update_state()
         self._history_lock.release()
         self._trigger()
-        #We always trigger when an event is received from the UI.  Otherwise,
-        #due to desynchronized clocks, it is possible to click Start/Stop
+        
+        # We always trigger when an event is received from the UI.  Otherwise,
+        # due to desynchronized clocks, it is possible to click Start/Stop
         # and produce an old event that is irrelevant.  This results in the
         # UI reaching an inconsistent state, with the button toggled off
         # but the clock still running.
@@ -106,7 +107,9 @@ class WatchModel():
         init = self._base_state.get_value()
         timeval = init[0]
         s = init[1]
-        #state machine
+        
+        # state machine
+        
         for ev in self._history:
             event_time = ev[0]
             event_type = ev[1]
@@ -194,7 +197,7 @@ class OneWatchView():
         self._time_label.set_single_line_mode(True)
         self._time_label.set_selectable(True)
         self._time_label.set_width_chars(10)
-        self._time_label.set_alignment(1,0.5) #justify right
+        self._time_label.set_alignment(1,0.5) # justify right
         self._time_label.set_padding(6,0)
         eb = Gtk.EventBox()
         eb.add(self._time_label)
@@ -220,7 +223,7 @@ class OneWatchView():
         self._marks_label.modify_font(markfont)
         self._marks_label.set_single_line_mode(True)
         self._marks_label.set_selectable(True)
-        self._marks_label.set_alignment(0, 0.5) #justify left
+        self._marks_label.set_alignment(0, 0.5) # justify left
         self._marks_label.set_padding(6,0)
         self._marks_model.register_listener(self._update_marks)
         eb2 = Gtk.EventBox()
@@ -321,7 +324,7 @@ class OneWatchView():
     def _run_cb(self, widget):
         t = time.time()
         self._logger.debug("run button pressed: " + str(t))
-        if self._run_button.get_active(): #button has _just_ been set active
+        if self._run_button.get_active(): # button has _just_ been set active
             action = WatchModel.RUN_EVENT
             suspend.inhibit()
         else:
