@@ -1,4 +1,4 @@
-# Copyright 2007 Benjamin M. Schwartz
+:# Copyright 2007 Benjamin M. Schwartz
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -425,6 +425,10 @@ class GUIView():
             marks_model = dobject.AddOnlySet(marks_handler, translator = dobject.float_translator)
             self._markers.append(marks_model)
             watch_view = OneWatchView(watch_model, name_model, marks_model, timer)
+            if i==0:
+				gobject.timeout_add(100,self.initfocus,watch_view)
+            
+            
             self._views.append(watch_view)
             
         self.display = Gtk.VBox()
@@ -432,6 +436,10 @@ class GUIView():
             self.display.pack_start(x.display, True, True, 0)
         
         self._pause_lock = threading.Lock()
+    
+    def initfocus(self,watch_view):
+		watch_view._got_focus_cb(None, None)
+	    watch_view._time_label.grab_focus()    
     
     def get_names(self):
         return [n.get_value() for n in self._names]
