@@ -429,7 +429,7 @@ class GUIView():
             self._markers.append(marks_model)
             watch_view = OneWatchView(watch_model, name_model, marks_model, timer)
             if i==0:
-				gobject.timeout_add(100,self.initfocus,watch_view)
+				GObject.timeout_add(100,self.initfocus,watch_view)
             
             
             self._views.append(watch_view)
@@ -442,8 +442,8 @@ class GUIView():
     
     def initfocus(self,watch_view):
 		watch_view._got_focus_cb(None, None)
-	    watch_view._time_label.grab_focus()    
-    
+		watch_view._time_label.grab_focus()
+		
     def get_names(self):
         return [n.get_value() for n in self._names]
     
