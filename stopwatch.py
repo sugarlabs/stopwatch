@@ -243,9 +243,13 @@ class OneWatchView():
         eb2.add(self._marks_label)
         eb2.modify_bg(Gtk.StateType.NORMAL, Gdk.color_parse("white"))
 
+        self._sw = Gtk.ScrolledWindow()
+        self._sw.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.NEVER)
+        self._sw.add_with_viewport(eb2)
+
         filler0 = Gtk.VBox()
         filler0.pack_start(self.box, False, False, 0)
-        filler0.pack_start(eb2, False, False, 0)
+        filler0.pack_start(self._sw, False, False, 0)
 
         filler = Gtk.VBox()
         filler.pack_start(filler0, True, False, 0)
@@ -391,12 +395,19 @@ class OneWatchView():
             self._marks_model.add(tval)
         self._update_marks()
 
+    def _update_sw(self):
+        a = self._sw.get_hadjustment()
+        a.set_value(a.get_upper())
+        return False
+
     def _update_marks(self, diffset=None):
         L = list(self._marks_model)
         L.sort()
-        s = [self._format(num) for num in L]
+        s = [self._format(num) for num in L[-16:]]
         p = " ".join(s)
         self._marks_label.set_text(p)
+        if hasattr(self, '_sw'):
+            GObject.idle_add(self._update_sw)
 
     def _name_cb(self, widget):
         self._name_model.set_value(widget.get_text())
