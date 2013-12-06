@@ -37,6 +37,10 @@ import stopwatch
 import dobject
 
 import cPickle
+try:
+    import json
+except ImportError:
+    import simplejson as json
 
 SERVICE = "org.laptop.StopWatch"
 
@@ -163,7 +167,11 @@ class StopWatchActivity(Activity):
 
     def read_file(self, file_path):
         f = open(file_path, 'r')
-        q = cPickle.load(f)
+        s = f.read()
+        try:
+            q = json.loads(s)
+        except ValueError:
+            q = cPickle.loads(s)
         f.close()
         self.gui.set_all(q)
 
@@ -171,7 +179,8 @@ class StopWatchActivity(Activity):
         self.metadata['mime_type'] = 'application/x-stopwatch-activity'
         q = self.gui.get_all()
         f = open(file_path, 'w')
-        cPickle.dump(q, f)
+        s = json.dumps(q)
+        f.write(s)
         f.close()
 
     def _active_cb(self, widget, event):
