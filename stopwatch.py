@@ -153,7 +153,7 @@ class WatchModel():
 
 
 class OneWatchView():
-    def __init__(self, mywatch, myname, mymarks, timer):
+    def __init__(self, mywatch, myname, mymarks, timer, activity):
         self._logger = logging.getLogger('stopwatch.OneWatchView')
         self._watch_model = mywatch
         self._name_model = myname
@@ -253,7 +253,7 @@ class OneWatchView():
         self.display.connect('focus-in-event', self._got_focus_cb)
         self.display.connect('focus-out-event', self._lost_focus_cb)
         self.display.add_events(Gdk.EventMask.ALL_EVENTS_MASK)
-        self.display.connect('key-press-event', self._keypress_cb)
+        parent.connect('key-press-event', self._keypress_cb)
 
         self._watch_model.register_view_listener(self.update_state)
 
@@ -421,7 +421,7 @@ class OneWatchView():
 class GUIView():
     NUM_WATCHES = 9
 
-    def __init__(self, tubebox, timer):
+    def __init__(self, tubebox, timer, activity):
         self.timer = timer
         self._views = []
         self._names = []
@@ -443,7 +443,7 @@ class GUIView():
                                              translator=dobject.float_translator)
             self._markers.append(marks_model)
             watch_view = OneWatchView(watch_model, name_model, marks_model,
-                                      timer)
+                                      timer, activity)
             self._views.append(watch_view)
 
         self.display = Gtk.VBox()

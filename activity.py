@@ -89,7 +89,7 @@ class StopWatchActivity(Activity):
 
         self.tubebox = dobject.TubeBox()
         self.timer = dobject.TimeHandler("main", self.tubebox)
-        self.gui = stopwatch.GUIView(self.tubebox, self.timer)
+        self.gui = stopwatch.GUIView(self.tubebox, self.timer, self)
 
         self.set_canvas(self.gui.display)
         self.show_all()
