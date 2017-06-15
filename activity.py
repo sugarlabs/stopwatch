@@ -20,12 +20,16 @@
 import logging
 import telepathy
 
+import gi
+gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 from gi.repository import Gdk
 from gi.repository import GObject
 
 from sugar3.graphics.toolbarbox import ToolbarBox
 from sugar3.activity.activity import Activity
+from sugar3.activity.widgets import StopButton, ShareButton, TitleEntry, \
+     ActivityButton
 from sugar3.presence import presenceservice
 from sugar3.presence.tubeconn import TubeConnection
 
@@ -36,17 +40,15 @@ import cPickle
 
 SERVICE = "org.laptop.StopWatch"
 
+
 class StopWatchActivity(Activity):
     """StopWatch Activity as specified in activity.info"""
     def __init__(self, handle):
         """Set up the StopWatch activity."""
         Activity.__init__(self, handle)
         self._logger = logging.getLogger('stopwatch-activity')
-        
+
         GObject.threads_init()
-        
-        from sugar3.activity.widgets import StopButton, \
-                    ShareButton, TitleEntry, ActivityButton
 
         toolbar_box = ToolbarBox()
         self.activity_button = ActivityButton(self)
@@ -103,14 +105,13 @@ class StopWatchActivity(Activity):
         self.connect("visibility-notify-event", self._visible_cb)
         self.connect("notify::active", self._active_cb)
 
-
     def _shared_cb(self, activity):
         self._logger.debug('My activity was shared')
         self.initiating = True
         self._sharing_setup()
 
         self._logger.debug('This is my activity: making a tube...')
-        id = self.tubes_chan[telepathy.CHANNEL_TYPE_TUBES].OfferDBusTube(
+        self._tubes_channel.OfferDBusTube(
             SERVICE, {})
 
     def _sharing_setup(self):
@@ -119,11 +120,13 @@ class StopWatchActivity(Activity):
             return
 
         self.conn = self.shared_activity.telepathy_conn
-        self.tubes_chan = self.shared_activity.telepathy_tubes_chan
-        self.text_chan = self.shared_activity.telepathy_text_chan
+        tubes_chan = self.shared_activity.telepathy_tubes_chan
+        text_chan = self.shared_activity.telepathy_text_chan
 
-        self.tubes_chan[telepathy.CHANNEL_TYPE_TUBES].connect_to_signal('NewTube',
-            self._new_tube_cb)
+        self._tubes_channel = tubes_chan[telepathy.CHANNEL_TYPE_TUBES]
+        self._text_channel = text_chan[telepathy.CHANNEL_INTERFACE_GROUP]
+
+        self._tubes_channel.connect_to_signal('NewTube', self._new_tube_cb)
 
     def _list_tubes_reply_cb(self, tubes):
         for tube_info in tubes:
@@ -141,43 +144,43 @@ class StopWatchActivity(Activity):
         self._sharing_setup()
 
         self._logger.debug('This is not my activity: waiting for a tube...')
-        self.tubes_chan[telepathy.CHANNEL_TYPE_TUBES].ListTubes(
+        self._tubes_channel.ListTubes(
             reply_handler=self._list_tubes_reply_cb,
             error_handler=self._list_tubes_error_cb)
 
     def _new_tube_cb(self, id, initiator, type, service, params, state):
         self._logger.debug('New tube: ID=%d initator=%d type=%d service=%s '
-                     'params=%r state=%d', id, initiator, type, service,
-                     params, state)
-        if (type == telepathy.TUBE_TYPE_DBUS and
-            service == SERVICE):
+                           'params=%r state=%d',
+                           id, initiator, type, service, params, state)
+        if type == telepathy.TUBE_TYPE_DBUS and \
+           service == SERVICE:
             if state == telepathy.TUBE_STATE_LOCAL_PENDING:
-                self.tubes_chan[telepathy.CHANNEL_TYPE_TUBES].AcceptDBusTube(id)
-            tube_conn = TubeConnection(self.conn,
-                self.tubes_chan[telepathy.CHANNEL_TYPE_TUBES],
-                id, group_iface=self.text_chan[telepathy.CHANNEL_INTERFACE_GROUP])
+                self._tubes_channel.AcceptDBusTube(
+                    id)
+            tube_conn = TubeConnection(self.conn, self._tubes_channel, id,
+                                       group_iface=self._text_channel)
             self.tubebox.insert_tube(tube_conn, self.initiating)
-    
+
     def read_file(self, file_path):
         f = open(file_path, 'r')
         q = cPickle.load(f)
         f.close()
         self.gui.set_all(q)
-    
+
     def write_file(self, file_path):
         self.metadata['mime_type'] = 'application/x-stopwatch-activity'
         q = self.gui.get_all()
         f = open(file_path, 'w')
         cPickle.dump(q, f)
         f.close()
-        
+
     def _active_cb(self, widget, event):
         self._logger.debug("_active_cb")
         if self.props.active:
             self.gui.resume()
         else:
             self.gui.pause()
-            
+
     def _visible_cb(self, widget, event):
         self._logger.debug("_visible_cb")
         if event.get_state() == Gdk.VisibilityState.FULLY_OBSCURED:
