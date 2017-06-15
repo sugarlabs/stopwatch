@@ -1,3 +1,10 @@
+19
+
+* New translations (Chris Leonard et al),
+* Resolve divergent sources between multiple repositories (James Cameron),
+* Update POT file (James Cameron),
+* Add repository reference (James Cameron).
+
 13
 
 * Adding license field to activity.info
