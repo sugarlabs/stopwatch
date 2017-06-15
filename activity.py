@@ -1,4 +1,5 @@
 # Copyright 2007 Collabora Ltd.
+# Copyright 2011-2012 rafael ortiz rafael@activitycentral.com
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,22 +15,24 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-"""HelloMesh Activity: A case study for collaboration using Tubes."""
-"""Actividad HelloMesh: Un caso de estudio para colaboracion usando Tubos."""
+"""Stopwatch Activity"""
+"""Actividad Cronometro"""
 import logging
 import telepathy
 
-from sugar.activity.activity import Activity, ActivityToolbox
-from sugar.presence import presenceservice
+from gi.repository import Gtk
+from gi.repository import Gdk
+from gi.repository import GObject
 
-from sugar.presence.tubeconn import TubeConnection
+from sugar3.graphics.toolbarbox import ToolbarBox
+from sugar3.activity.activity import Activity
+from sugar3.presence import presenceservice
+from sugar3.presence.tubeconn import TubeConnection
 
 import stopwatch
-import gobject
 import dobject
 
 import cPickle
-import gtk.gdk
 
 SERVICE = "org.laptop.StopWatch"
 
@@ -40,55 +43,43 @@ class StopWatchActivity(Activity):
         Activity.__init__(self, handle)
         self._logger = logging.getLogger('stopwatch-activity')
         
-        gobject.threads_init()
+        GObject.threads_init()
+        
+        from sugar3.activity.widgets import StopButton, \
+                    ShareButton, TitleEntry, ActivityButton
 
-        # top toolbar with share and close buttons:
-        OLD_TOOLBAR = False
+        toolbar_box = ToolbarBox()
+        self.activity_button = ActivityButton(self)
+        toolbar_box.toolbar.insert(self.activity_button, 0)
+        self.activity_button.show()
+
+        title_entry = TitleEntry(self)
+        toolbar_box.toolbar.insert(title_entry, -1)
+        title_entry.show()
 
         try:
-            from sugar.graphics.toolbarbox import ToolbarBox, ToolbarButton
-            from sugar.activity.widgets import ActivityToolbarButton, StopButton, \
-                    ShareButton, TitleEntry, ActivityButton
-        except ImportError:
-            OLD_TOOLBAR = True
-
-        if OLD_TOOLBAR:
-            toolbox = ActivityToolbox(self)
-            self.set_toolbox(toolbox)
-            toolbox.show()
-        else:
-            toolbar_box = ToolbarBox()
-            self.activity_button = ActivityButton(self)
-            toolbar_box.toolbar.insert(self.activity_button, 0)
-            self.activity_button.show()
-
-            title_entry = TitleEntry(self)
-            toolbar_box.toolbar.insert(title_entry, -1)
-            title_entry.show()
-
-            try:
-                from sugar.activity.widgets import DescriptionItem
+                from sugar3.activity.widgets import DescriptionItem
                 description_item = DescriptionItem(self)
                 toolbar_box.toolbar.insert(description_item, -1)
                 description_item.show()
-            except:
+        except:
                 pass
 
-            share_button = ShareButton(self)
-            toolbar_box.toolbar.insert(share_button, -1)
-            share_button.show()
+        share_button = ShareButton(self)
+        toolbar_box.toolbar.insert(share_button, -1)
+        share_button.show()
 
-            separator = gtk.SeparatorToolItem()
-            separator.props.draw = False
-            separator.set_expand(True)
-            toolbar_box.toolbar.insert(separator, -1)
-            separator.show()
+        separator = Gtk.SeparatorToolItem()
+        separator.props.draw = False
+        separator.set_expand(True)
+        toolbar_box.toolbar.insert(separator, -1)
+        separator.show()
 
-            stop_button = StopButton(self)
-            toolbar_box.toolbar.insert(stop_button, -1)
-            stop_button.show()
+        stop_button = StopButton(self)
+        toolbar_box.toolbar.insert(stop_button, -1)
+        stop_button.show()
 
-            self.set_toolbar_box(toolbar_box)
+        self.set_toolbar_box(toolbar_box)
 
         self.tubebox = dobject.TubeBox()
         self.timer = dobject.TimeHandler("main", self.tubebox)
@@ -108,7 +99,7 @@ class StopWatchActivity(Activity):
         self.connect('shared', self._shared_cb)
         self.connect('joined', self._joined_cb)
 
-        self.add_events(gtk.gdk.VISIBILITY_NOTIFY_MASK)
+        self.add_events(Gdk.EventMask.VISIBILITY_NOTIFY_MASK)
         self.connect("visibility-notify-event", self._visible_cb)
         self.connect("notify::active", self._active_cb)
 
@@ -123,13 +114,13 @@ class StopWatchActivity(Activity):
             SERVICE, {})
 
     def _sharing_setup(self):
-        if self._shared_activity is None:
+        if self.shared_activity is None:
             self._logger.error('Failed to share or join activity')
             return
 
-        self.conn = self._shared_activity.telepathy_conn
-        self.tubes_chan = self._shared_activity.telepathy_tubes_chan
-        self.text_chan = self._shared_activity.telepathy_text_chan
+        self.conn = self.shared_activity.telepathy_conn
+        self.tubes_chan = self.shared_activity.telepathy_tubes_chan
+        self.text_chan = self.shared_activity.telepathy_text_chan
 
         self.tubes_chan[telepathy.CHANNEL_TYPE_TUBES].connect_to_signal('NewTube',
             self._new_tube_cb)
@@ -142,7 +133,7 @@ class StopWatchActivity(Activity):
         self._logger.error('ListTubes() failed: %s', e)
 
     def _joined_cb(self, activity):
-        if not self._shared_activity:
+        if not self.shared_activity:
             return
 
         self._logger.debug('Joined an existing shared activity')
@@ -189,7 +180,7 @@ class StopWatchActivity(Activity):
             
     def _visible_cb(self, widget, event):
         self._logger.debug("_visible_cb")
-        if event.state == gtk.gdk.VISIBILITY_FULLY_OBSCURED:
+        if event.get_state() == Gdk.VisibilityState.FULLY_OBSCURED:
             self.gui.pause()
         else:
             self.gui.resume()
