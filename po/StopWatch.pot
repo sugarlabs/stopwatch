@@ -8,10 +8,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-12-06 00:41+0000\n"
+"POT-Creation-Date: 2017-06-15 17:40+1000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -20,18 +21,18 @@ msgstr ""
 msgid "StopWatch"
 msgstr ""
 
-#: stopwatch.py:162
+#: stopwatch.py:177
 msgid "Start/Stop"
 msgstr ""
 
-#: stopwatch.py:170
+#: stopwatch.py:185
 msgid "Zero"
 msgstr ""
 
-#: stopwatch.py:177
+#: stopwatch.py:192
 msgid "Mark"
 msgstr ""
 
-#: stopwatch.py:410
+#: stopwatch.py:433
 msgid "Stopwatch"
 msgstr ""
