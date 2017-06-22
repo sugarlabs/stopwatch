@@ -109,6 +109,8 @@ class StopWatchActivity(Activity):
         self.connect("visibility-notify-event", self._visible_cb)
         self.connect("notify::active", self._active_cb)
 
+        self.connect('key-press-event', self._keypress_cb)
+
     def _shared_cb(self, activity):
         self._logger.debug('My activity was shared')
         self.initiating = True
@@ -196,3 +198,11 @@ class StopWatchActivity(Activity):
             self.gui.pause()
         else:
             self.gui.resume()
+
+    def _keypress_cb(self, widget, event):
+        if event.keyval in (Gdk.KEY_Up, Gdk.KEY_ISO_Left_Tab):
+            self.gui.select_up()
+            return True
+        elif event.keyval in (Gdk.KEY_Down, Gdk.KEY_Tab):
+            self.gui.select_down()
+            return True

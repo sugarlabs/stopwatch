@@ -25,7 +25,7 @@ import time
 import thread
 import threading
 import locale
-from gettext import gettext
+from gettext import gettext as _
 import powerd
 
 suspend = powerd.Suspend()
@@ -153,18 +153,22 @@ class WatchModel():
 
 
 class OneWatchView():
-    def __init__(self, mywatch, myname, mymarks, timer, activity):
+    def __init__(self, mywatch, myname, mymarks, timer, activity, number, group):
         self._logger = logging.getLogger('stopwatch.OneWatchView')
         self._watch_model = mywatch
         self._name_model = myname
         self._marks_model = mymarks
         self._timer = timer
+        self._number = number
 
         self._update_lock = threading.Lock()
         self._state = None
         self._timeval = 0
 
         self._offset = self._timer.get_offset()
+
+        self._selected = Gtk.RadioButton()
+        self._selected.join_group(group)
 
         self._name = Gtk.Entry()
         self._name_changed_handler = self._name.connect('changed',
@@ -174,25 +178,28 @@ class OneWatchView():
 
         check = Gtk.Image()
         check.set_from_file('check.svg')
-        self._run_button = Gtk.ToggleButton(gettext("Start/Stop"))
+        self._run_button = Gtk.ToggleButton(_("Start/Stop"))
         self._run_button.set_image(check)
         self._run_button.props.focus_on_click = False
         self._run_handler = self._run_button.connect('clicked', self._run_cb)
         self._run_button_lock = threading.Lock()
+        self._run_button.set_tooltip_text(_('Start or stop [ctrl+s]'))
 
         circle = Gtk.Image()
         circle.set_from_file('circle.svg')
-        self._reset_button = Gtk.Button(gettext("Zero"))
+        self._reset_button = Gtk.Button(_("Zero"))
         self._reset_button.set_image(circle)
         self._reset_button.props.focus_on_click = False
         self._reset_button.connect('clicked', self._reset_cb)
+        self._reset_button.set_tooltip_text(_('Zero the time [ctrl+z]'))
 
         x = Gtk.Image()
         x.set_from_file('x.svg')
-        self._mark_button = Gtk.Button(gettext("Mark"))
+        self._mark_button = Gtk.Button(_("Mark"))
         self._mark_button.set_image(x)
         self._mark_button.props.focus_on_click = False
         self._mark_button.connect('clicked', self._mark_cb)
+        self._mark_button.set_tooltip_text(_('Mark the time [ctrl+m]'))
 
         timefont = Pango.FontDescription()
         timefont.set_family("monospace")
@@ -219,7 +226,8 @@ class OneWatchView():
         self.box.pack_start(self._run_button, False, True, 0)
         self.box.pack_start(self._reset_button, False, True, 0)
         self.box.pack_start(self._mark_button, False, True, 0)
-        self.box.pack_end(eb, False, False, 6)
+        self.box.pack_start(eb, False, False, 6)
+        self.box.pack_end(self._selected, False, False, 2)
 
         markfont = Pango.FontDescription()
         markfont.set_family("monospace")
@@ -253,11 +261,30 @@ class OneWatchView():
         self.display.connect('focus-in-event', self._got_focus_cb)
         self.display.connect('focus-out-event', self._lost_focus_cb)
         self.display.add_events(Gdk.EventMask.ALL_EVENTS_MASK)
-        parent.connect('key-press-event', self._keypress_cb)
+        activity.connect('key-press-event', self._keypress_cb)
 
         self._watch_model.register_view_listener(self.update_state)
 
         thread.start_new_thread(self._start_running, ())
+
+    def _grab_focus(self):
+        self._name.grab_focus()
+        self._name.select_region(0, -1)
+
+        return False
+
+    def get_selected(self):
+        return self._selected.get_active()
+
+    def set_selected(self):
+        self._selected.set_active(True)
+        if self._name.get_mapped():
+            self._grab_focus()
+        else:
+            GObject.idle_add(self._grab_focus)
+
+    def get_number(self):
+        return self._number
 
     def update_state(self, q):
         self._logger.debug("update_state: "+str(q))
@@ -402,20 +429,37 @@ class OneWatchView():
         self._name.modify_bg(Gtk.StateType.NORMAL, self._gray)
         return True
 
-    # KP_End == check gamekey = 65436
-    # KP_Page_Down == X gamekey = 65435
-    # KP_Home == box gamekey = 65429
-    # KP_Page_Up == O gamekey = 65434
     def _keypress_cb(self, widget, event):
         self._logger.debug("key press: " + Gdk.keyval_name(event.keyval) +
                            " " + str(event.keyval))
-        if event.keyval == 65436:
-            self._run_button.clicked()
-        elif event.keyval == 65434:
-            self._reset_button.clicked()
-        elif event.keyval == 65435:
-            self._mark_button.clicked()
+
+        if not self.get_selected():
+            return False
+
+        norm = {
+            Gdk.KEY_KP_End: self._run_button.clicked,  # check gamekey
+            Gdk.KEY_KP_Page_Up: self._reset_button.clicked,  # O gamekey
+            Gdk.KEY_KP_Page_Down: self._mark_button.clicked,  # X gamekey
+            }
+
+        ctrl = {
+            Gdk.KEY_s: self._run_button.clicked,
+            Gdk.KEY_z: self._reset_button.clicked,
+            Gdk.KEY_m: self._mark_button.clicked,
+            }
+
+        if event.get_state() & Gdk.ModifierType.CONTROL_MASK:
+            if event.keyval in ctrl:
+                ctrl[event.keyval]()
+                return True
+
+        if event.keyval in norm:
+            norm[event.keyval]()
+            return True
+
         return False
+        # TODO: ctrl+c copy name = value
+        # TODO: ctrl+v paste name = value
 
 
 class GUIView():
@@ -427,10 +471,11 @@ class GUIView():
         self._names = []
         self._watches = []
         self._markers = []
+        bogus = Gtk.RadioButton()
         for i in xrange(GUIView.NUM_WATCHES):
             name_handler = dobject.UnorderedHandler("name" + str(i), tubebox)
             name_model = dobject.Latest(name_handler,
-                                        gettext("Stopwatch") + " " +
+                                        _("Stopwatch") + " " +
                                         locale.str(i + 1),
                                         time_handler=timer,
                                         translator=dobject.string_translator)
@@ -443,8 +488,10 @@ class GUIView():
                                              translator=dobject.float_translator)
             self._markers.append(marks_model)
             watch_view = OneWatchView(watch_model, name_model, marks_model,
-                                      timer, activity)
+                                      timer, activity, i, bogus)
             self._views.append(watch_view)
+        del bogus
+        self.set_selected(0)
 
         self.display = Gtk.VBox()
         for x in self._views:
@@ -476,17 +523,32 @@ class GUIView():
         for i in xrange(GUIView.NUM_WATCHES):
             self._markers[i].update(marks[i])
 
+    def get_selected(self):
+        selected = 0
+        for view in self._views:
+            if view.get_selected():
+                selected = view.get_number()
+        return selected
+
+    def set_selected(self, selected):
+        self._views[selected].set_selected()
+
     def get_all(self):
         return (self.timer.get_offset(), self.get_names(),
-                self.get_state(), self.get_marks())
+                self.get_state(), self.get_marks(), self.get_selected())
 
     def set_all(self, q):
         self.timer.set_offset(q[0])
         self.set_names(q[1])
         self.set_state(q[2])
         self.set_marks(q[3])
+        try:
+            selected = int(q[4])
+        except IndexError:
+            selected = 0
         for v in self._views:
             v.refresh()
+        self.set_selected(selected)
 
     def pause(self):
         self._pause_lock.acquire()
@@ -499,3 +561,13 @@ class GUIView():
         for w in self._views:
             w.resume()
         self._pause_lock.release()
+
+    def select_down(self):
+        selected = self.get_selected() + 1
+        if selected < GUIView.NUM_WATCHES:
+            self.set_selected(selected)
+
+    def select_up(self):
+        selected = self.get_selected() - 1
+        if selected > -1:
+            self.set_selected(selected)

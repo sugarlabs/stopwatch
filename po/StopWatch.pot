@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-06-15 17:40+1000\n"
+"POT-Creation-Date: 2017-06-22 19:10+1000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,18 +21,36 @@ msgstr ""
 msgid "StopWatch"
 msgstr ""
 
-#: stopwatch.py:177
+#: activity/activity.info:3
+msgid ""
+"An easy way to settle the debate of who is faster! This activity allows you "
+"to measure the amount of time something takes."
+msgstr ""
+
+#: stopwatch.py:181
 msgid "Start/Stop"
 msgstr ""
 
-#: stopwatch.py:185
+#: stopwatch.py:186
+msgid "Start or stop [ctrl+s]"
+msgstr ""
+
+#: stopwatch.py:190
 msgid "Zero"
 msgstr ""
 
-#: stopwatch.py:192
+#: stopwatch.py:194
+msgid "Zero the time [ctrl+z]"
+msgstr ""
+
+#: stopwatch.py:198
 msgid "Mark"
 msgstr ""
 
-#: stopwatch.py:433
+#: stopwatch.py:202
+msgid "Mark the time [ctrl+m]"
+msgstr ""
+
+#: stopwatch.py:478
 msgid "Stopwatch"
 msgstr ""
