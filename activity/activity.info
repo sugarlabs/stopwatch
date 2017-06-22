@@ -7,4 +7,5 @@ activity_version = 19
 show_launcher = yes
 license = GPLv3+
 mime_types = application/x-stopwatch-activity;
+summary = An easy way to settle the debate of who is faster! This activity allows you to measure the amount of time something takes.
 repository = https://github.com/sugarlabs/stopwatch
