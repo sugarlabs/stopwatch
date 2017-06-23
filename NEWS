@@ -1,3 +1,14 @@
+* Switch to using json (Ignacio Rodríguez, 2013),
+* Backward compatibility (Manuel Quiñones, James Cameron),
+* Enable game key support (Ignacio Rodríguez, 2013),
+* Add radio buttons for selected stopwatch (Ignacio Rodríguez, 2013),
+* Add tab, shift+tab, up arrow, down arrow, to change selection (James Cameron),
+* Add ctrl+s, ctrl+m and ctrl+x to start/stop, mark and zero (James Cameron),
+* Add tooltips for shortcut keys (James Cameron),
+* Stop overflow of marks (Aneesh Dogra, 2013),
+* Show only most recent marks (James Cameron),
+* Show zero and mark button feedback with shortcuts (James Cameron).
+
 19
 
 * New translations (Chris Leonard et al),
