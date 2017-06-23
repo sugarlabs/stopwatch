@@ -266,6 +266,7 @@ class OneWatchView():
         self.display.connect('focus-out-event', self._lost_focus_cb)
         self.display.add_events(Gdk.EventMask.ALL_EVENTS_MASK)
         activity.connect('key-press-event', self._keypress_cb)
+        activity.connect('key-release-event', self._keyrelease_cb)
 
         self._watch_model.register_view_listener(self.update_state)
 
@@ -379,10 +380,16 @@ class OneWatchView():
 
     def _reset_cb(self, widget):
         t = time.time()
-        self._logger.debug("reset button pressed: " + str(t))
         self._watch_model.add_event_from_view((self._timer.get_offset() + t,
                                               WatchModel.RESET_EVENT))
         return True
+
+    def _reset_press(self):
+        self._reset_cb(self._reset_button)
+        self._reset_button.set_state(Gtk.StateType.ACTIVE)
+
+    def _reset_release(self):
+        self._reset_button.set_state(Gtk.StateType.NORMAL)
 
     def _mark_cb(self, widget):
         t = time.time() + self._offset
@@ -394,6 +401,13 @@ class OneWatchView():
         elif s == WatchModel.STATE_PAUSED:
             self._marks_model.add(tval)
         self._update_marks()
+
+    def _mark_press(self):
+        self._mark_button.clicked()
+        self._mark_button.set_state(Gtk.StateType.ACTIVE)
+
+    def _mark_release(self):
+        self._mark_button.set_state(Gtk.StateType.NORMAL)
 
     def _update_sw(self):
         a = self._sw.get_hadjustment()
@@ -440,25 +454,7 @@ class OneWatchView():
         self._name.modify_bg(Gtk.StateType.NORMAL, self._gray)
         return True
 
-    def _keypress_cb(self, widget, event):
-        self._logger.debug("key press: " + Gdk.keyval_name(event.keyval) +
-                           " " + str(event.keyval))
-
-        if not self.get_selected():
-            return False
-
-        norm = {
-            Gdk.KEY_KP_End: self._run_button.clicked,  # check gamekey
-            Gdk.KEY_KP_Page_Up: self._reset_button.clicked,  # O gamekey
-            Gdk.KEY_KP_Page_Down: self._mark_button.clicked,  # X gamekey
-            }
-
-        ctrl = {
-            Gdk.KEY_s: self._run_button.clicked,
-            Gdk.KEY_z: self._reset_button.clicked,
-            Gdk.KEY_m: self._mark_button.clicked,
-            }
-
+    def _key_dispatch(self, norm, ctrl, event):
         if event.get_state() & Gdk.ModifierType.CONTROL_MASK:
             if event.keyval in ctrl:
                 ctrl[event.keyval]()
@@ -469,8 +465,46 @@ class OneWatchView():
             return True
 
         return False
-        # TODO: ctrl+c copy name = value
-        # TODO: ctrl+v paste name = value
+
+    def _keypress_cb(self, widget, event):
+
+        if not self.get_selected():
+            return False
+
+        norm = {
+            Gdk.KEY_KP_End: self._run_button.clicked,  # check gamekey
+            Gdk.KEY_KP_Page_Up: self._reset_press,  # O gamekey
+            Gdk.KEY_KP_Page_Down: self._mark_press,  # X gamekey
+            }
+
+        ctrl = {
+            Gdk.KEY_s: self._run_button.clicked,
+            Gdk.KEY_z: self._reset_press,
+            Gdk.KEY_m: self._mark_press,
+            # TODO: ctrl+c copy name = value
+            # TODO: ctrl+v paste name = value
+            }
+
+        return self._key_dispatch(norm, ctrl, event)
+
+    def _keyrelease_cb(self, widget, event):
+        self._logger.debug("key press: " + Gdk.keyval_name(event.keyval) +
+                           " " + str(event.keyval))
+
+        if not self.get_selected():
+            return False
+
+        norm = {
+            Gdk.KEY_KP_Page_Up: self._reset_release,  # O gamekey
+            Gdk.KEY_KP_Page_Down: self._mark_release,  # X gamekey
+            }
+
+        ctrl = {
+            Gdk.KEY_z: self._reset_release,
+            Gdk.KEY_m: self._mark_release,
+            }
+
+        return self._key_dispatch(norm, ctrl, event)
 
 
 class GUIView():
