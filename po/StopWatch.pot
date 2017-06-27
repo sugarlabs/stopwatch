@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-06-22 19:10+1000\n"
+"POT-Creation-Date: 2017-06-27 10:04+1000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -32,7 +32,7 @@ msgid "Start/Stop"
 msgstr ""
 
 #: stopwatch.py:186
-msgid "Start or stop [ctrl+s]"
+msgid "<b>Start or stop</b>  Ctrl+S"
 msgstr ""
 
 #: stopwatch.py:190
@@ -40,7 +40,7 @@ msgid "Zero"
 msgstr ""
 
 #: stopwatch.py:194
-msgid "Zero the time [ctrl+z]"
+msgid "<b>Zero the time</b>  Ctrl+Z"
 msgstr ""
 
 #: stopwatch.py:198
@@ -48,7 +48,7 @@ msgid "Mark"
 msgstr ""
 
 #: stopwatch.py:202
-msgid "Mark the time [ctrl+m]"
+msgid "<b>Mark the time</b>  Ctrl+M"
 msgstr ""
 
 #: stopwatch.py:478

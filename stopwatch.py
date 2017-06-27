@@ -183,7 +183,7 @@ class OneWatchView():
         self._run_button.props.focus_on_click = False
         self._run_handler = self._run_button.connect('clicked', self._run_cb)
         self._run_button_lock = threading.Lock()
-        self._run_button.set_tooltip_text(_('Start or stop [ctrl+s]'))
+        self._run_button.set_tooltip_markup(_('<b>Start or stop</b>  Ctrl+S'))
 
         circle = Gtk.Image()
         circle.set_from_file('circle.svg')
@@ -191,7 +191,7 @@ class OneWatchView():
         self._reset_button.set_image(circle)
         self._reset_button.props.focus_on_click = False
         self._reset_button.connect('clicked', self._reset_cb)
-        self._reset_button.set_tooltip_text(_('Zero the time [ctrl+z]'))
+        self._reset_button.set_tooltip_markup(_('<b>Zero the time</b>  Ctrl+Z'))
 
         x = Gtk.Image()
         x.set_from_file('x.svg')
@@ -199,7 +199,7 @@ class OneWatchView():
         self._mark_button.set_image(x)
         self._mark_button.props.focus_on_click = False
         self._mark_button.connect('clicked', self._mark_cb)
-        self._mark_button.set_tooltip_text(_('Mark the time [ctrl+m]'))
+        self._mark_button.set_tooltip_markup(_('<b>Mark the time</b>  Ctrl+M'))
 
         timefont = Pango.FontDescription()
         timefont.set_family("monospace")
