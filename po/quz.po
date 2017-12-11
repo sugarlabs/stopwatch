@@ -7,8 +7,8 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2009-12-06 00:41+0000\n"
-"PO-Revision-Date: 2011-11-12 18:14+0200\n"
-"Last-Translator: Chris <cjl@laptop.org>\n"
+"PO-Revision-Date: 2013-10-08 03:52+0200\n"
+"Last-Translator: Z <yachaq@hotmail.co.nz>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: quz\n"
 "MIME-Version: 1.0\n"
@@ -28,7 +28,7 @@ msgstr "Qallariy / Sayachiy"
 
 #: stopwatch.py:170
 msgid "Zero"
-msgstr ""
+msgstr "Ch'usaq"
 
 #: stopwatch.py:177
 msgid "Mark"
