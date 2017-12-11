@@ -1,3 +1,5 @@
+19.1
+
 * Switch to using json (Ignacio Rodríguez, 2013),
 * Backward compatibility (Manuel Quiñones, James Cameron),
 * Enable game key support (Ignacio Rodríguez, 2013),
