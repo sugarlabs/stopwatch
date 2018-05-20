@@ -18,13 +18,15 @@
 """Stopwatch Activity"""
 """Actividad Cronometro"""
 import logging
-import telepathy
 
 import gi
 gi.require_version('Gtk', '3.0')
+gi.require_version('TelepathyGLib', '0.12')
+
 from gi.repository import Gtk
 from gi.repository import Gdk
 from gi.repository import GObject
+from gi.repository import TelepathyGLib
 
 from sugar3.graphics.toolbarbox import ToolbarBox
 from sugar3.activity.activity import Activity
@@ -129,8 +131,8 @@ class StopWatchActivity(Activity):
         tubes_chan = self.shared_activity.telepathy_tubes_chan
         text_chan = self.shared_activity.telepathy_text_chan
 
-        self._tubes_channel = tubes_chan[telepathy.CHANNEL_TYPE_TUBES]
-        self._text_channel = text_chan[telepathy.CHANNEL_INTERFACE_GROUP]
+        self._tubes_channel = tubes_chan[TelepathyGLib.IFACE_CHANNEL_TYPE_TUBES]
+        self._text_channel = text_chan[TelepathyGLib.IFACE_CHANNEL_INTERFACE_GROUP]
 
         self._tubes_channel.connect_to_signal('NewTube', self._new_tube_cb)
 
@@ -158,9 +160,9 @@ class StopWatchActivity(Activity):
         self._logger.debug('New tube: ID=%d initator=%d type=%d service=%s '
                            'params=%r state=%d',
                            id, initiator, type, service, params, state)
-        if type == telepathy.TUBE_TYPE_DBUS and \
+        if type == TelepathyGLib.TubeType.DBUS and \
            service == SERVICE:
-            if state == telepathy.TUBE_STATE_LOCAL_PENDING:
+            if state == TelepathyGLib.TubeState.LOCAL_PENDING:
                 self._tubes_channel.AcceptDBusTube(
                     id)
             tube_conn = TubeConnection(self.conn, self._tubes_channel, id,
