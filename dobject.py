@@ -293,13 +293,6 @@ class UnorderedHandler(dbus.gobject_service.ExportedGObject):
             return
         self.object.add_history(hist)
 
-    #Alternative implementation of a members_changed (not yet working)
-    """ 
-    def members_changed(self, message, added, removed, local_pending, remote_pending, actor, reason):
-        added_names = self.tube.InspectHandles(telepathy.CONNECTION_HANDLE_TYPE_LIST, added)
-        for name in added_names:
-            self.tell_history(name)
-    """
     def members_changed(self, added, removed):
         self._logger.debug("members_changed")
         for (handle, name) in added:
@@ -1151,13 +1144,6 @@ class UserDict(dbus.gobject_service.ExportedGObject):
     def receive_value(self, value, sender=None):
         self._dict[sender] = self._trans(value, False)
 
-    #Alternative implementation of a members_changed (not yet working)
-    """ 
-    def members_changed(self, message, added, removed, local_pending, remote_pending, actor, reason):
-        added_names = self.tube.InspectHandles(telepathy.CONNECTION_HANDLE_TYPE_LIST, added)
-        for name in added_names:
-            self.tell_history(name)
-    """
     def members_changed(self, added, removed):
         self._logger.debug("members_changed")
         for (handle, name) in removed:
