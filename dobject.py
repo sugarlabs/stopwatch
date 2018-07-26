@@ -18,11 +18,11 @@ along with DObject.  If not, see <http://www.gnu.org/licenses/>.
 """
 import dbus
 import dbus.service
-import dbus.gobject_service
+import dbus.gi_service
 import time
 import logging
 import threading
-import thread
+import _thread
 import random
 from dobject_helpers import *
 
@@ -75,7 +75,7 @@ class TubeBox:
         for L in self._listeners:
             L(tube, is_initiator)
 
-class TimeHandler(dbus.gobject_service.ExportedGObject):
+class TimeHandler(dbus.gi_service.ExportedGObject):
     """A TimeHandler provides a universal clock for a sharing instance.  It is a
     sort of cheap, decentralized synchronization system.  The TimeHandler 
     determines the offset between local time and group time by sending a
@@ -96,7 +96,7 @@ class TimeHandler(dbus.gobject_service.ExportedGObject):
 
     def __init__(self, name, tube_box, offset=0.0):
         self.PATH = TimeHandler.BASEPATH + name
-        dbus.gobject_service.ExportedGObject.__init__(self)
+        dbus.gi_service.ExportedGObject.__init__(self)
         self._logger = logging.getLogger(self.PATH)
         self._tube_box = tube_box
         self.tube = None
@@ -166,7 +166,7 @@ class TimeHandler(dbus.gobject_service.ExportedGObject):
     def receive_time(self, asktime, start_time, finish_time):
         self._logger.debug("receive_time")
         rtime = time.time()
-        thread.start_new_thread(self._handle_incoming_time, (asktime, start_time, finish_time, rtime))
+        _thread.start_new_thread(self._handle_incoming_time, (asktime, start_time, finish_time, rtime))
     
     def _handle_incoming_time(self, ask, start, finish, receive):
         self._offset_lock.acquire()
@@ -176,7 +176,7 @@ class TimeHandler(dbus.gobject_service.ExportedGObject):
         self._offset_lock.release()
 
 
-class UnorderedHandler(dbus.gobject_service.ExportedGObject):
+class UnorderedHandler(dbus.gi_service.ExportedGObject):
     """ The most basic DObject is the Unordered Object (UO).  A UO has the
     property that any changes to its state can be encapsulated as messages, and
     these messages have no intrinsic ordering.  Different instances of the same
@@ -217,7 +217,7 @@ class UnorderedHandler(dbus.gobject_service.ExportedGObject):
         object."""
         self._myname = name
         self.PATH = UnorderedHandler.BASEPATH + name
-        dbus.gobject_service.ExportedGObject.__init__(self)
+        dbus.gi_service.ExportedGObject.__init__(self)
         self._logger = logging.getLogger(self.PATH)
         self._tube_box = tube_box
         self.tube = None
@@ -518,7 +518,6 @@ class AddOnlySet:
         self._handler.register(self)
         
         self.__and__ = self._set.__and__
-        self.__cmp__ = self._set.__cmp__
         self.__contains__ = self._set.__contains__
         self.__eq__ = self._set.__eq__
         self.__ge__ = self._set.__ge__
@@ -528,7 +527,6 @@ class AddOnlySet:
         # Not implementing iand (it can remove items)
         # Special wrapper for ior to trigger events
         # Not implementing isub (it can remove items)
-        self.__iter__ = self._set.__iter__
         # Not implementing ixor (it can remove items)
         self.__le__ = self._set.__le__
         self.__len__ = self._set.__len__
@@ -611,6 +609,10 @@ class AddOnlySet:
         for L in self._listeners:
             L(s)
     
+    def __iter__(self):
+        for x in self._set:
+            yield x
+
     def __repr__(self):
         return 'AddOnlySet(' + repr(self._handler) + ', ' + repr(self._set) + ', ' + repr(self._trans) + ')'
 
@@ -645,10 +647,8 @@ class AddOnlySortedSet:
         # Not implementing iand (it can remove items)
         # Special wrapper for ior to trigger events
         # Not implementing isub (it can remove items)
-        self.__iter__ = self._set.__iter__
         # Not implementing ixor (it can remove items)
         self.__le__ = self._set.__le__
-        self.__len__ = self._set.__len__
         self.__lt__ = self._set.__lt__
         self.__ne__ = self._set.__ne__
         self.__or__ = self._set.__or__
@@ -738,6 +738,13 @@ class AddOnlySortedSet:
     
     def __repr__(self):
         return 'AddOnlySortedSet(' + repr(self._handler) + ', ' + repr(self._set) + ', ' + repr(self._trans) + ')'
+
+    def __iter__(self):
+        for x in self._set:
+            yield x
+
+    def __len__(self):
+        return len(self._set)
         
         
 def CausalHandler():
@@ -950,7 +957,7 @@ class CausalDict:
         d = dict()
         d.update(*args,**kargs)
         newpairs = []
-        for p in d.items():
+        for p in list(d.items()):
             if (p[0] not in self._dict) or (self._dict[p[0]] != p[1]):
                 newpairs.append(p)
                 self._dict[p[0]] = p[1]
@@ -985,7 +992,7 @@ class CausalDict:
                             del self._dict[key]
                 elif flag == CausalDict.CLEAR:
                     self._clear = n
-                    for (k, ind) in self._index_dict.items():
+                    for (k, ind) in list(self._index_dict.items()):
                         if ind < self._clear:
                             del self._index_dict[k]
                             if k in self._dict:
@@ -996,8 +1003,8 @@ class CausalDict:
 
     def get_history(self):
         c = self._handler.index_trans(self._clear, True)
-        d = dbus.Array([(self._key_trans(p[0], True), self._val_trans(p[1], True)) for p in self._dict.items()])
-        i = dbus.Array([(self._key_trans(p[0], True), self._handler.index_trans(p[1], True)) for p in self._index_dict.items()])
+        d = dbus.Array([(self._key_trans(p[0], True), self._val_trans(p[1], True)) for p in list(self._dict.items())])
+        i = dbus.Array([(self._key_trans(p[0], True), self._handler.index_trans(p[1], True)) for p in list(self._index_dict.items())])
         return dbus.Tuple((c,d,i))
     
     def add_history(self, hist):
@@ -1010,7 +1017,7 @@ class CausalDict:
         
         if c > self._clear:
             self._clear = c
-            for (k, n) in self._index_dict.items():
+            for (k, n) in list(self._index_dict.items()):
                 if n < self._clear:
                     del self._index_dict[k]
                     if k in self._dict:
@@ -1052,14 +1059,14 @@ class CausalDict:
         for L in self._listeners:
             L(added, removed)
 
-class UserDict(dbus.gobject_service.ExportedGObject):
+class UserDict(dbus.gi_service.ExportedGObject):
     IFACE = "org.dobject.UserDict"
     BASEPATH = "/org/dobject/UserDict/"
     
     def __init__(self, name, tubebox, myval, translator = empty_translator):
         self._myname = name
         self.PATH = UserDict.BASEPATH + name
-        dbus.gobject_service.ExportedGObject.__init__(self)
+        dbus.gi_service.ExportedGObject.__init__(self)
         self._logger = logging.getLogger(self.PATH)
         self._tube_box = tube_box
         self.tube = None

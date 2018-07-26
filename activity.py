@@ -38,7 +38,7 @@ from sugar3.presence.tubeconn import TubeConnection
 import stopwatch
 import dobject
 
-import cPickle
+import pickle
 try:
     import json
 except ImportError:
@@ -175,7 +175,7 @@ class StopWatchActivity(Activity):
         try:
             q = json.loads(s)
         except ValueError:
-            q = cPickle.loads(s)
+            q = pickle.loads(s)
         f.close()
         self.gui.set_all(q)
 
