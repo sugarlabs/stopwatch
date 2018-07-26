@@ -23,6 +23,7 @@ def marker():
 
 
 class Suspend():
+
     """ control of powerd idle suspend,
         reference counted,
         does nothing if powerd is not present """
