@@ -756,7 +756,6 @@ class AddOnlySortedSet:
         # Not implementing difference_update (it removes items)
         # Not implementing discard (it removes items)
         self.first = self._set.first
-        self.headset = self._set.headset
         self.index = self._set.index
         self.intersection = self._set.intersection
         # Not implementing intersection_update (it removes items)
@@ -769,7 +768,6 @@ class AddOnlySortedSet:
         self.subset = self._set.subset
         self.symmetric_difference = self._set.symmetric_difference
         # Not implementing symmetric_difference_update
-        self.tailset = self._set.tailset
         self.union = self._set.union
         # Special implementation of update to trigger events
 

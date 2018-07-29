@@ -403,11 +403,3 @@ class ListSet:
 
     def last(self):
         return self._list[-1]
-
-    def headset(self, x):
-        a = bisect.bisect_left(self._list, x, i, j)
-        return self[:a]
-
-    def tailset(self, x):
-        a = bisect.bisect_left(self._list, x, i, j)
-        return self[a:]
