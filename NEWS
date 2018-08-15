@@ -1,3 +1,9 @@
+20.1
+
+* Port to TelepathyGLib (Rahul Bothra),
+* Source code formatting (James Cameron),
+* Add README,
+
 20
 
 * Switch to using json (Ignacio Rodríguez, 2013),
