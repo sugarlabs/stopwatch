@@ -153,7 +153,8 @@ class WatchModel():
 
 
 class OneWatchView():
-    def __init__(self, mywatch, myname, mymarks, timer, activity, number, group):
+    def __init__(
+            self, mywatch, myname, mymarks, timer, activity, number, group):
         self._logger = logging.getLogger('stopwatch.OneWatchView')
         self._watch_model = mywatch
         self._name_model = myname
@@ -191,7 +192,8 @@ class OneWatchView():
         self._reset_button.set_image(circle)
         self._reset_button.props.focus_on_click = False
         self._reset_button.connect('clicked', self._reset_cb)
-        self._reset_button.set_tooltip_markup(_('<b>Zero the time</b>  Ctrl+Z'))
+        self._reset_button.set_tooltip_markup(
+            _('<b>Zero the time</b>  Ctrl+Z'))
 
         x = Gtk.Image()
         x.set_from_file('x.svg')
@@ -203,7 +205,7 @@ class OneWatchView():
 
         timefont = Pango.FontDescription()
         timefont.set_family("monospace")
-        timefont.set_size(Pango.SCALE*14)
+        timefont.set_size(Pango.SCALE * 14)
         self._time_label = Gtk.Label(label=self._format(0))
         self._time_label.modify_font(timefont)
         self._time_label.set_single_line_mode(True)
@@ -231,7 +233,7 @@ class OneWatchView():
 
         markfont = Pango.FontDescription()
         markfont.set_family("monospace")
-        markfont.set_size(Pango.SCALE*10)
+        markfont.set_size(Pango.SCALE * 10)
         self._marks_label = Gtk.Label()
         self._marks_label.modify_font(markfont)
         self._marks_label.set_single_line_mode(True)
@@ -257,7 +259,7 @@ class OneWatchView():
         self.backbox = Gtk.EventBox()
         self.backbox.add(filler)
         self._black = Gdk.color_parse("black")
-        self._gray = Gdk.Color(256*192, 256*192, 256*192)
+        self._gray = Gdk.Color(256 * 192, 256 * 192, 256 * 192)
 
         self.display = Gtk.EventBox()
         self.display.add(self.backbox)
@@ -292,7 +294,7 @@ class OneWatchView():
         return self._number
 
     def update_state(self, q):
-        self._logger.debug("update_state: "+str(q))
+        self._logger.debug("update_state: " + str(q))
         self._update_lock.acquire()
         self._logger.debug("acquired update_lock")
         self._state = q[1]
@@ -475,7 +477,7 @@ class OneWatchView():
             Gdk.KEY_KP_End: self._run_button.clicked,  # check gamekey
             Gdk.KEY_KP_Page_Up: self._reset_press,  # O gamekey
             Gdk.KEY_KP_Page_Down: self._mark_press,  # X gamekey
-            }
+        }
 
         ctrl = {
             Gdk.KEY_s: self._run_button.clicked,
@@ -483,7 +485,7 @@ class OneWatchView():
             Gdk.KEY_m: self._mark_press,
             # TODO: ctrl+c copy name = value
             # TODO: ctrl+v paste name = value
-            }
+        }
 
         return self._key_dispatch(norm, ctrl, event)
 
@@ -497,12 +499,12 @@ class OneWatchView():
         norm = {
             Gdk.KEY_KP_Page_Up: self._reset_release,  # O gamekey
             Gdk.KEY_KP_Page_Down: self._mark_release,  # X gamekey
-            }
+        }
 
         ctrl = {
             Gdk.KEY_z: self._reset_release,
             Gdk.KEY_m: self._mark_release,
-            }
+        }
 
         return self._key_dispatch(norm, ctrl, event)
 
@@ -529,8 +531,8 @@ class GUIView():
             watch_model = WatchModel(watch_handler)
             self._watches.append(watch_model)
             marks_handler = dobject.UnorderedHandler("marks" + str(i), tubebox)
-            marks_model = dobject.AddOnlySet(marks_handler,
-                                             translator=dobject.float_translator)
+            marks_model = dobject.AddOnlySet(
+                marks_handler, translator=dobject.float_translator)
             self._markers.append(marks_model)
             watch_view = OneWatchView(watch_model, name_model, marks_model,
                                       timer, activity, i, bogus)

@@ -30,8 +30,8 @@ from gi.repository import TelepathyGLib
 
 from sugar3.graphics.toolbarbox import ToolbarBox
 from sugar3.activity.activity import Activity
-from sugar3.activity.widgets import StopButton, ShareButton, TitleEntry, \
-     ActivityButton
+from sugar3.activity.widgets \
+    import StopButton, ShareButton, TitleEntry, ActivityButton
 from sugar3.presence import presenceservice
 from sugar3.presence.tubeconn import TubeConnection
 
@@ -131,8 +131,10 @@ class StopWatchActivity(Activity):
         tubes_chan = self.shared_activity.telepathy_tubes_chan
         text_chan = self.shared_activity.telepathy_text_chan
 
-        self._tubes_channel = tubes_chan[TelepathyGLib.IFACE_CHANNEL_TYPE_TUBES]
-        self._text_channel = text_chan[TelepathyGLib.IFACE_CHANNEL_INTERFACE_GROUP]
+        self._tubes_channel = \
+            tubes_chan[TelepathyGLib.IFACE_CHANNEL_TYPE_TUBES]
+        self._text_channel = \
+            text_chan[TelepathyGLib.IFACE_CHANNEL_INTERFACE_GROUP]
 
         self._tubes_channel.connect_to_signal('NewTube', self._new_tube_cb)
 
