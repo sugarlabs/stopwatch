@@ -39,6 +39,6 @@ StopWatch is started by [Sugar](https://github.com/sugarlabs/sugar).
 Developers
 ==========
 
-StopWatch is the original source of, and inspiration for, the codebase that became [Groupthink](http://bemasc.net/~bens/groupthink/).
+StopWatch is the original source of, and inspiration for, the codebase that became [Groupthink](http://wiki.sugarlabs.org/go/Groupthink).
 
 Stopwatch was previously maintained in a [git repository at OLPC](http://dev.laptop.org/git/activities/stopwatch/)
