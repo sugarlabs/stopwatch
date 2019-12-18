@@ -19,7 +19,7 @@ StopWatch is not part of the Sugar desktop, but can be added.  Please refer to;
 
 * [How to Get Sugar on sugarlabs.org](https://sugarlabs.org/),
 * [How to use Sugar](https://help.sugarlabs.org/),
-* [Download StopWatch using Browse](https://activities.sugarlabs.org/), search for `Turtle StopWatch`, then download, and;
+* [Download StopWatch using Browse](https://activities.sugarlabs.org/), search for `StopWatch`, then download, and;
 * [How to use StopWatch](https://help.sugarlabs.org/stopwatch.html)
 
 How to upgrade?
