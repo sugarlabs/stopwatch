@@ -358,9 +358,9 @@ class HighScore:
     def receive_message(self, message):
         self._logger.debug("receive_message " + str(message))
         if len(message) == 2: #Remote has break_ties=False
-            self._set_value_from_net(self._val_trans(message[0], False), self._score_trans(message[1], False), None)
+            self._list_value_from_net(self._val_trans(message[0], False), self._score_trans(message[1], False), None)
         elif len(message) == 3:
-            self._set_value_from_net(self._val_trans(message[0], False), self._score_trans(message[1], False), float_translator(message[2], False))
+            self._list_value_from_net(self._val_trans(message[0], False), self._score_trans(message[1], False), float_translator(message[2], False))
 
     add_history = receive_message
 
@@ -502,7 +502,7 @@ class Latest:
             L(val)
 
 
-class AddOnlySet:
+class AddOnlySet(ListSet):
     """The AddOnlySet is the archetypal UnorderedObject.  It consists of a set,
     supporting all the normal Python set operations except those that cause an
     item to be removed from the set.  Thanks to this restriction, a AddOnlySet
@@ -511,8 +511,8 @@ class AddOnlySet:
     """
     def __init__(self, handler, initset = (), translator=empty_translator):
         self._logger = logging.getLogger('dobject.AddOnlySet')
-        self._set = set(initset)
-
+        self._list = set(initset)
+        #self._list = list(initset)
         self._lock = threading.Lock()
 
         self._trans = translator
@@ -521,64 +521,57 @@ class AddOnlySet:
         self._handler = handler
         self._handler.register(self)
 
-        self.__and__ = self._set.__and__
-        self.__cmp__ = self._set.__cmp__
-        self.__contains__ = self._set.__contains__
-        self.__eq__ = self._set.__eq__
-        self.__ge__ = self._set.__ge__
+        self.__and__ = self._list.__and__
+        
+        self.__contains__ = self._list.__contains__
+        self.__eq__ = self._list.__eq__
+        self.__ge__ = self._list.__ge__
         # Not implementing getattribute
-        self.__gt__ = self._set.__gt__
-        self.__hash__ = self._set.__hash__
+        self.__gt__ = self._list.__gt__
+        self.__hash__ = self._list.__hash__
         # Not implementing iand (it can remove items)
         # Special wrapper for ior to trigger events
         # Not implementing isub (it can remove items)
-        self.__iter__ = self._set.__iter__
+        self.__iter__ = self._list.__iter__
         # Not implementing ixor (it can remove items)
-        self.__le__ = self._set.__le__
-        self.__len__ = self._set.__len__
-        self.__lt__ = self._set.__lt__
-        self.__ne__ = self._set.__ne__
-        self.__or__ = self._set.__or__
-        self.__rand__ = self._set.__rand__
+        self.__le__ = self._list.__le__
+        self.__len__ = self._list.__len__
+        self.__lt__ = self._list.__lt__
+        self.__ne__ = self._list.__ne__
+        self.__or__ = self._list.__or__
+        self.__rand__ = self._list.__rand__
         # Special implementation of repr
-        self.__ror__ = self._set.__ror__
-        self.__rsub__ = self._set.__rsub__
-        self.__rxor__ = self._set.__rxor__
-        self.__sub__ = self._set.__sub__
-        self.__xor__ = self._set.__xor__
-        self.__next__ = self._set.__next__
+        self.__ror__ = self._list.__ror__
+        self.__rsub__ = self._list.__rsub__
+        self.__rxor__ = self._list.__rxor__
+        self.__sub__ = self._list.__sub__
+        self.__xor__ = self._list.__xor__
 
         # Special implementation of add to trigger events
         # Not implementing clear
-        self.copy = self._set.copy
-        self.difference = self._set.difference
+        self.copy = self._list.copy
+        self.difference = self._list.difference
         # Not implementing difference_update (it removes items)
         # Not implementing discard (it removes items)
-        self.intersection = self._set.intersection
+        self.intersection = self._list.intersection
         # Not implementing intersection_update (it removes items)
-        self.issubset = self._set.issubset
-        self.issuperset = self._set.issuperset
+        self.issubset = self._list.issubset
+        self.issuperset = self._list.issuperset
         # Not implementing pop
         # Not implementing remove
-        self.symmetric_difference = self._set.symmetric_difference
+        self.symmetric_difference = self._list.symmetric_difference
         # Not implementing symmetric_difference_update
-        self.union = self._set.union
+        self.union = self._list.union
         # Special implementation of update to trigger events
-
-    def __iter__(self):
-        pass
-
-    def __next__(self):
-        pass
 
     def update(self, y):
         """Add all the elements of an iterable y to the current set.  If any of
         these elements were not already present, they will be broadcast to all
         other users."""
         s = set(y)
-        d = s - self._set
+        d = s - self._list
         if len(d) > 0:
-            self._set.update(d)
+            self._list.update(d)
             self._send(d)
 
     __ior__ = update
@@ -586,8 +579,8 @@ class AddOnlySet:
     def add(self, y):
         """ Add the single element y to the current set.  If y is not already
         present, it will be broadcast to all other users."""
-        if y not in self._set:
-            self._set.add(y)
+        if y not in self._list:
+            self._list.add(y)
             self._send((y,))
 
     def _send(self, els):
@@ -596,17 +589,17 @@ class AddOnlySet:
 
     def _net_update(self, y):
         s = set(y)
-        d = s - self._set
+        d = s - self._list
         if len(d) > 0:
-            self._set.update(d)
+            self._list.update(d)
             self._trigger(d)
 
     def receive_message(self, msg):
         self._net_update((self._trans(el, False) for el in msg))
 
     def get_history(self):
-        if len(self._set) > 0:
-            return dbus.Array([self._trans(el, True) for el in self._set])
+        if len(self._list) > 0:
+            return dbus.Array([self._trans(el, True) for el in self._list])
         else:
             return dbus.Array([], type=dbus.Boolean) #Prevent introspection of empty list, which fails 
 
@@ -616,17 +609,17 @@ class AddOnlySet:
         """Register a listener L(diffset).  Every time another user adds items
         to the set, L will be called with the set of new items."""
         self._listeners.append(L)
-        L(self._set.copy())
+        L(self._list.copy())
 
     def _trigger(self, s):
         for L in self._listeners:
             L(s)
 
     def __repr__(self):
-        return 'AddOnlySet(' + repr(self._handler) + ', ' + repr(self._set) + ', ' + repr(self._trans) + ')'
+        return 'AddOnlySet(' + repr(self._handler) + ', ' + repr(self._list) + ', ' + repr(self._trans) + ')'
 
 
-class AddOnlySortedSet:
+class AddOnlySortedSet(ListSet):
     """ AddOnlySortedSet is much like AddOnlySet, only backed by a ListSet, which
     provides a set for objects that are ordered under cmp().  Items are maintained
     in order.  This approach is most useful in cases where each item is a message,
@@ -636,9 +629,10 @@ class AddOnlySortedSet:
     """
     def __init__(self, handler, initset = (), translator=empty_translator):
         self._logger = logging.getLogger('dobject.AddOnlySortedSet')
-        self._set = set(initset)
-
+        self._list = ListSet(initset)
+        
         self._lock = threading.Lock()
+        
 
         self._trans = translator
         self._listeners = []  #This must be done before registering with the handler
@@ -646,70 +640,65 @@ class AddOnlySortedSet:
         self._handler = handler
         self._handler.register(self)
 
-        self.__and__ = self._set.__and__
-        self.__contains__ = self._set.__contains__
+        self.__and__ = self._list.__and__
+        self.__contains__ = self._list.__contains__
         # No self.__delitem__
-        self.__eq__ = self._set.__eq__
-        self.__ge__ = self._set.__ge__
-        
+        self.__eq__ = self._list.__eq__
+        self.__ge__ = self._list.__ge__
         # Not implementing getattribute
-
-        
-        self.__gt__ = self._set.__gt__
+        self.__getitem__ = self._list.__getitem__
+        self.__gt__ = self._list.__gt__
         # Not implementing iand (it can remove items)
         # Special wrapper for ior to trigger events
         # Not implementing isub (it can remove items)
-        self.__iter__ = self._set.__iter__
+        self.__iter__ = self._list.__iter__
         # Not implementing ixor (it can remove items)
-        self.__le__ = self._set.__le__
-        self.__len__ = self._set.__len__
-        self.__lt__ = self._set.__lt__
-        self.__ne__ = self._set.__ne__
-        self.__or__ = self._set.__or__
-        self.__rand__ = self._set.__rand__
+        self.__le__ = self._list.__le__
+        self.__len__ = self._list.__len__
+        self.__lt__ = self._list.__lt__
+        self.__ne__ = self._list.__ne__
+        self.__or__ = self._list.__or__
+        self.__rand__ = self._list.__rand__
         # Special implementation of repr
-        self.__ror__ = self._set.__ror__
-        self.__rsub__ = self._set.__rsub__
-        self.__rxor__ = self._set.__rxor__
-        self.__sub__ = self._set.__sub__
-        self.__xor__ = self._set.__xor__
+        self.__ror__ = self._list.__ror__
+        self.__rsub__ = self._list.__rsub__
+        self.__rxor__ = self._list.__rxor__
+        self.__sub__ = self._list.__sub__
+        self.__xor__ = self._list.__xor__
 
         # Special implementation of add to trigger events
         # Not implementing clear
-        self.copy = self._set.copy
-        self.difference = self._set.difference
+        self.copy = self._list.copy
+        self.difference = self._list.difference
         # Not implementing difference_update (it removes items)
         # Not implementing discard (it removes items)
-        self.first = self._set.first
-        self.headset = self._set.headset
-        self.index = self._set.index
-        self.intersection = self._set.intersection
+        self.first = self._list.first
+        self.headset = self._list.headset
+        self.index = self._list.index
+        self.intersection = self._list.intersection
         # Not implementing intersection_update (it removes items)
-        self.issubset = self._set.issubset
-        self.issuperset = self._set.issuperset
-        self.last = self._set.last
+        self.issubset = self._list.issubset
+        self.issuperset = self._list.issuperset
+        self.last = self._list.last
         # Not implementing pop
-        self.position = self._set.position
+        self.position = self._list.position
         # Not implementing remove
-        self.subset = self._set.subset
-        self.symmetric_difference = self._set.symmetric_difference
+        self.subset = self._list.subset
+        self.symmetric_difference = self._list.symmetric_difference
         # Not implementing symmetric_difference_update
-        self.tailset = self._set.tailset
-        self.union = self._set.union
+        self.tailset = self._list.tailset
+        self.union = self._list.union
         # Special implementation of update to trigger events
-        self.__next__ = self._set.__next__
+        self.__cmp__ = Comparable.__cmp__
 
-    def __getitem__(self):
-        return list(self._set)[0]
-        
     def update(self, y):
         """Add all the elements of an iterable y to the current set.  If any of
         these elements were not already present, they will be broadcast to all
         other users."""
-        d = set(y)
-        d -= self._set
+        d = ListSet(y)
+        d -= self._list
         if len(d) > 0:
-            self._set.update(d)
+            self._list.update(d)
             self._send(d)
 
     __ior__ = update
@@ -717,8 +706,8 @@ class AddOnlySortedSet:
     def add(self, y):
         """ Add the single element y to the current set.  If y is not already
         present, it will be broadcast to all other users."""
-        if y not in self._set:
-            self._set.add(y)
+        if y not in self._list:
+            self._list.add(y)
             self._send((y,))
 
     def _send(self, els):
@@ -726,19 +715,19 @@ class AddOnlySortedSet:
             self._handler.send(dbus.Array([self._trans(el, True) for el in els]))
 
     def _net_update(self, y):
-        d = set()
+        d = ListSet()
         d._list = y
-        d -= self._set
+        d -= self._list
         if len(d) > 0:
-            self._set |= d
+            self._list |= d
             self._trigger(d)
 
     def receive_message(self, msg):
         self._net_update([self._trans(el, False) for el in msg])
 
     def get_history(self):
-        if len(self._set._list) > 0:
-            return dbus.Array([self._trans(el, True) for el in self._set._list])
+        if len(self._list._list) > 0:
+            return dbus.Array([self._trans(el, True) for el in self._list._list])
         else:
             return dbus.Array([], type=dbus.Boolean) #prevent introspection of empty list, which fails
 
@@ -748,14 +737,14 @@ class AddOnlySortedSet:
         """Register a listener L(diffset).  Every time another user adds items
         to the set, L will be called with the set of new items as a SortedSet."""
         self._listeners.append(L)
-        L(self._set.copy())
+        L(self._list.copy())
 
     def _trigger(self, s):
         for L in self._listeners:
             L(s)
 
     def __repr__(self):
-        return 'AddOnlySortedSet(' + repr(self._handler) + ', ' + repr(self._set) + ', ' + repr(self._trans) + ')'
+        return 'AddOnlySortedSet(' + repr(self._handler) + ', ' + repr(self._list) + ', ' + repr(self._trans) + ')'
 
 
 def CausalHandler():
