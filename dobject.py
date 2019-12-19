@@ -22,7 +22,7 @@ import dbus.gobject_service
 import time
 import logging
 import threading
-import thread
+import _thread
 import random
 from dobject_helpers import *
 
@@ -166,7 +166,7 @@ class TimeHandler(dbus.gobject_service.ExportedGObject):
     def receive_time(self, asktime, start_time, finish_time):
         self._logger.debug("receive_time")
         rtime = time.time()
-        thread.start_new_thread(self._handle_incoming_time, (asktime, start_time, finish_time, rtime))
+        _thread.start_new_thread(self._handle_incoming_time, (asktime, start_time, finish_time, rtime))
     
     def _handle_incoming_time(self, ask, start, finish, receive):
         self._offset_lock.acquire()
@@ -950,7 +950,7 @@ class CausalDict:
         d = dict()
         d.update(*args,**kargs)
         newpairs = []
-        for p in d.items():
+        for p in list(d.items()):
             if (p[0] not in self._dict) or (self._dict[p[0]] != p[1]):
                 newpairs.append(p)
                 self._dict[p[0]] = p[1]
@@ -985,7 +985,7 @@ class CausalDict:
                             del self._dict[key]
                 elif flag == CausalDict.CLEAR:
                     self._clear = n
-                    for (k, ind) in self._index_dict.items():
+                    for (k, ind) in list(self._index_dict.items()):
                         if ind < self._clear:
                             del self._index_dict[k]
                             if k in self._dict:
@@ -996,8 +996,8 @@ class CausalDict:
 
     def get_history(self):
         c = self._handler.index_trans(self._clear, True)
-        d = dbus.Array([(self._key_trans(p[0], True), self._val_trans(p[1], True)) for p in self._dict.items()])
-        i = dbus.Array([(self._key_trans(p[0], True), self._handler.index_trans(p[1], True)) for p in self._index_dict.items()])
+        d = dbus.Array([(self._key_trans(p[0], True), self._val_trans(p[1], True)) for p in list(self._dict.items())])
+        i = dbus.Array([(self._key_trans(p[0], True), self._handler.index_trans(p[1], True)) for p in list(self._index_dict.items())])
         return dbus.Tuple((c,d,i))
     
     def add_history(self, hist):
@@ -1010,7 +1010,7 @@ class CausalDict:
         
         if c > self._clear:
             self._clear = c
-            for (k, n) in self._index_dict.items():
+            for (k, n) in list(self._index_dict.items()):
                 if n < self._clear:
                     del self._index_dict[k]
                     if k in self._dict:

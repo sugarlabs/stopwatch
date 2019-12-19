@@ -22,7 +22,7 @@ from gi.repository import Pango
 import dobject
 import logging
 import time
-import thread
+import _thread
 import threading
 import locale
 from gettext import gettext as _
@@ -149,7 +149,7 @@ class WatchModel():
 
     def _trigger(self):
         if self._view_listener is not None:
-            thread.start_new_thread(self._view_listener, (self._state,))
+            _thread.start_new_thread(self._view_listener, (self._state,))
 
 
 class OneWatchView():
@@ -272,7 +272,7 @@ class OneWatchView():
 
         self._watch_model.register_view_listener(self.update_state)
 
-        thread.start_new_thread(self._start_running, ())
+        _thread.start_new_thread(self._start_running, ())
 
     def _grab_focus(self):
         self._name.grab_focus()
@@ -317,7 +317,7 @@ class OneWatchView():
 
     def _update_name_cb(self, name):
         self._logger.debug("_update_name_cb " + name)
-        thread.start_new_thread(self.update_name, (name,))
+        _thread.start_new_thread(self.update_name, (name,))
 
     def update_name(self, name):
         self._logger.debug("update_name " + name)
@@ -440,7 +440,7 @@ class OneWatchView():
     def refresh(self):
         """Make sure display is up-to-date"""
         self._update_name_cb(self._name_model.get_value())
-        thread.start_new_thread(self.update_state,
+        _thread.start_new_thread(self.update_state,
                                 (self._watch_model.get_state(),))
         self._update_marks()
 
@@ -519,7 +519,7 @@ class GUIView():
         self._watches = []
         self._markers = []
         bogus = Gtk.RadioButton()
-        for i in xrange(GUIView.NUM_WATCHES):
+        for i in range(GUIView.NUM_WATCHES):
             name_handler = dobject.UnorderedHandler("name" + str(i), tubebox)
             name_model = dobject.Latest(name_handler,
                                         _("Stopwatch") + " " +
@@ -550,7 +550,7 @@ class GUIView():
         return [n.get_value() for n in self._names]
 
     def set_names(self, namestate):
-        for i in xrange(GUIView.NUM_WATCHES):
+        for i in range(GUIView.NUM_WATCHES):
             self._names[i].set_value(namestate[i])
 
     def get_state(self):
@@ -558,7 +558,7 @@ class GUIView():
                 w.get_last_update_time()) for w in self._watches]
 
     def set_state(self, states):
-        for i in xrange(GUIView.NUM_WATCHES):
+        for i in range(GUIView.NUM_WATCHES):
             self._watches[i].reset(states[i][0], states[i][1])
             if self._watches[i].is_running():
                 suspend.inhibit()
@@ -567,7 +567,7 @@ class GUIView():
         return [list(m) for m in self._markers]
 
     def set_marks(self, marks):
-        for i in xrange(GUIView.NUM_WATCHES):
+        for i in range(GUIView.NUM_WATCHES):
             self._markers[i].update(marks[i])
 
     def get_selected(self):
