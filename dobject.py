@@ -18,7 +18,7 @@ along with DObject.  If not, see <http://www.gnu.org/licenses/>.
 """
 import dbus
 import dbus.service
-import dbus.glib_service
+from dbus.gi_service import ExportedGObject
 import time
 import logging
 import threading
@@ -77,7 +77,7 @@ class TubeBox:
             L(tube, is_initiator)
 
 
-class TimeHandler(dbus.gobject_service.ExportedGObject):
+class TimeHandler(ExportedGObject):
     """A TimeHandler provides a universal clock for a sharing instance.  It is a
     sort of cheap, decentralized synchronization system.  The TimeHandler 
     determines the offset between local time and group time by sending a
@@ -98,7 +98,7 @@ class TimeHandler(dbus.gobject_service.ExportedGObject):
 
     def __init__(self, name, tube_box, offset=0.0):
         self.PATH = TimeHandler.BASEPATH + name
-        dbus.gobject_service.ExportedGObject.__init__(self)
+        ExportedGObject.__init__(self)
         self._logger = logging.getLogger(self.PATH)
         self._tube_box = tube_box
         self.tube = None
@@ -162,7 +162,7 @@ class TimeHandler(dbus.gobject_service.ExportedGObject):
                 start_time += self.offset
                 remote.receive_time(asktime, start_time, time.time() + self.offset, reply_handler=PassFunction, error_handler=PassFunction)
         finally:
-        return
+            return
 
     @dbus.service.method(dbus_interface=IFACE, in_signature='ddd', out_signature='')
     def receive_time(self, asktime, start_time, finish_time):
@@ -178,7 +178,7 @@ class TimeHandler(dbus.gobject_service.ExportedGObject):
         self._offset_lock.release()
 
 
-class UnorderedHandler(dbus.gobject_service.ExportedGObject):
+class UnorderedHandler(ExportedGObject):
     """ The most basic DObject is the Unordered Object (UO).  A UO has the
     property that any changes to its state can be encapsulated as messages, and
     these messages have no intrinsic ordering.  Different instances of the same
@@ -219,7 +219,7 @@ class UnorderedHandler(dbus.gobject_service.ExportedGObject):
         object."""
         self._myname = name
         self.PATH = UnorderedHandler.BASEPATH + name
-        dbus.gobject_service.ExportedGObject.__init__(self)
+        ExportedGObject.__init__(self)
         self._logger = logging.getLogger(self.PATH)
         self._tube_box = tube_box
         self.tube = None
@@ -1059,14 +1059,14 @@ class CausalDict:
             L(added, removed)
 
 
-class UserDict(dbus.gobject_service.ExportedGObject):
+class UserDict(ExportedGObject):
     IFACE = "org.dobject.UserDict"
     BASEPATH = "/org/dobject/UserDict/"
 
     def __init__(self, name, tubebox, myval, translator = empty_translator):
         self._myname = name
         self.PATH = UserDict.BASEPATH + name
-        dbus.gobject_service.ExportedGObject.__init__(self)
+        ExportedGObject.__init__(self)
         self._logger = logging.getLogger(self.PATH)
         self._tube_box = tube_box
         self.tube = None

@@ -1,7 +1,7 @@
 [Activity]
 name = StopWatch
 bundle_id = org.laptop.StopWatchActivity
-exec = sugar-activity activity.StopWatchActivity
+exec = sugar-activity3 activity.StopWatchActivity
 icon = activity-stopwatch
 activity_version = 20.1
 license = GPLv2+;LGPLv2+
