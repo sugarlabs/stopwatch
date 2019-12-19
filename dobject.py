@@ -546,6 +546,7 @@ class AddOnlySet:
         self.__rxor__ = self._set.__rxor__
         self.__sub__ = self._set.__sub__
         self.__xor__ = self._set.__xor__
+        self.__next__ = self._set.__next__
 
         # Special implementation of add to trigger events
         # Not implementing clear
@@ -563,6 +564,12 @@ class AddOnlySet:
         # Not implementing symmetric_difference_update
         self.union = self._set.union
         # Special implementation of update to trigger events
+
+    def __iter__(self):
+        pass
+
+    def __next__(self):
+        pass
 
     def update(self, y):
         """Add all the elements of an iterable y to the current set.  If any of
@@ -629,7 +636,7 @@ class AddOnlySortedSet:
     """
     def __init__(self, handler, initset = (), translator=empty_translator):
         self._logger = logging.getLogger('dobject.AddOnlySortedSet')
-        self._set = ListSet(initset)
+        self._set = set(initset)
 
         self._lock = threading.Lock()
 
@@ -644,8 +651,10 @@ class AddOnlySortedSet:
         # No self.__delitem__
         self.__eq__ = self._set.__eq__
         self.__ge__ = self._set.__ge__
+        
         # Not implementing getattribute
-        self.__getitem__ = self._set.__getitem__
+
+        
         self.__gt__ = self._set.__gt__
         # Not implementing iand (it can remove items)
         # Special wrapper for ior to trigger events
@@ -688,12 +697,16 @@ class AddOnlySortedSet:
         self.tailset = self._set.tailset
         self.union = self._set.union
         # Special implementation of update to trigger events
+        self.__next__ = self._set.__next__
 
+    def __getitem__(self):
+        return list(self._set)[0]
+        
     def update(self, y):
         """Add all the elements of an iterable y to the current set.  If any of
         these elements were not already present, they will be broadcast to all
         other users."""
-        d = ListSet(y)
+        d = set(y)
         d -= self._set
         if len(d) > 0:
             self._set.update(d)
@@ -713,7 +726,7 @@ class AddOnlySortedSet:
             self._handler.send(dbus.Array([self._trans(el, True) for el in els]))
 
     def _net_update(self, y):
-        d = ListSet()
+        d = set()
         d._list = y
         d -= self._set
         if len(d) > 0:
