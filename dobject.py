@@ -358,9 +358,9 @@ class HighScore:
     def receive_message(self, message):
         self._logger.debug("receive_message " + str(message))
         if len(message) == 2: #Remote has break_ties=False
-            self._list_value_from_net(self._val_trans(message[0], False), self._score_trans(message[1], False), None)
+            self._set_value_from_net(self._val_trans(message[0], False), self._score_trans(message[1], False), None)
         elif len(message) == 3:
-            self._list_value_from_net(self._val_trans(message[0], False), self._score_trans(message[1], False), float_translator(message[2], False))
+            self._set_value_from_net(self._val_trans(message[0], False), self._score_trans(message[1], False), float_translator(message[2], False))
 
     add_history = receive_message
 
@@ -512,17 +512,13 @@ class AddOnlySet(ListSet):
     def __init__(self, handler, initset = (), translator=empty_translator):
         self._logger = logging.getLogger('dobject.AddOnlySet')
         self._list = set(initset)
-        #self._list = list(initset)
         self._lock = threading.Lock()
-
         self._trans = translator
         self._listeners = []  #This must be done before registering with the handler
-
         self._handler = handler
         self._handler.register(self)
 
         self.__and__ = self._list.__and__
-        
         self.__contains__ = self._list.__contains__
         self.__eq__ = self._list.__eq__
         self.__ge__ = self._list.__ge__
@@ -630,13 +626,9 @@ class AddOnlySortedSet(ListSet):
     def __init__(self, handler, initset = (), translator=empty_translator):
         self._logger = logging.getLogger('dobject.AddOnlySortedSet')
         self._list = ListSet(initset)
-        
         self._lock = threading.Lock()
-        
-
         self._trans = translator
         self._listeners = []  #This must be done before registering with the handler
-
         self._handler = handler
         self._handler.register(self)
 
@@ -774,7 +766,7 @@ def CausalHandler():
     access to the network.  This fact of implementation may change in the
     future, but CausalObjects will not be able to tell the difference.
     """
-    max64 = 2**64
+    _max64 = 2**64
 
     def __init__(self, name, tube_box):
         self._unordered = UnorderedObject(name, tube_box)
