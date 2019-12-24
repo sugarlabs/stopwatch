@@ -80,7 +80,7 @@ def kill_dupes(a): #assumes a is sorted
     """Internal helper function for removing duplicates in a sorted list"""
     prev = a[0]
     out = [prev]
-    for i in xrange(1, len(a)):
+    for i in range(1, len(a)):
         item = a[i]
         if item != prev:
             out.append(item)
