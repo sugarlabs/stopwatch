@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-04-02 16:10+1000\n"
-"PO-Revision-Date: 2026-06-15 16:05+0000\n"
+"PO-Revision-Date: 2026-06-29 08:07+0000\n"
 "Last-Translator: NF <rkavt@smartprojects.ge>\n"
 "Language-Team: Georgian <http://weblate.sugarlabs.org/projects/"
 "sugar-activities/stopwatch/ka/>\n"
@@ -21,7 +21,7 @@ msgstr ""
 
 #: activity/activity.info:2
 msgid "StopWatch"
-msgstr "წამზომი"
+msgstr "წამმზომი"
 
 #: activity/activity.info:3
 msgid ""
