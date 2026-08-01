@@ -337,7 +337,7 @@ class OneWatchView():
         return False
 
     def _format(self, t):
-        return locale.format('%.2f', max(0, t))
+        return locale.format_string('%.2f', max(0, t))
 
     def _update_label(self, string, ev):
         self._time_label.set_text(string)
